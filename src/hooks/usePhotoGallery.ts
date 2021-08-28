@@ -11,6 +11,12 @@ import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Storage } from "@capacitor/storage";
 import { Capacitor } from "@capacitor/core";
 
+
+export interface UserPhoto {
+  filepath: string;
+  webviewPath?: string;
+}
+
 export function usePhotoGallery() {
   const [photos,setPhotos] = useState<UserPhoto[]>([]);
 
@@ -27,7 +33,7 @@ export function usePhotoGallery() {
     const newPhotos = [
       {
         filepath: fileName,
-        webViewPath: cameraPhoto.webPath,
+        webviewPath: cameraPhoto.webPath,
       },
       ...photos,
     ];
@@ -39,9 +45,4 @@ export function usePhotoGallery() {
     photos,
     takePhoto,
   };
-}
-
-export interface UserPhoto {
-  filepath: string;
-  webviewPath?: string;
 }
