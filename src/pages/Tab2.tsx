@@ -3,8 +3,11 @@ import { camera, trash, close } from 'ionicons/icons';
 import ExploreContainer from '../components/ExploreContainer';
 import './Tab2.css';
 import { format } from 'path';
+import { usePhotoGallery } from "../hooks/usePhotoGallery"
+
 
 const Tab2: React.FC = () => {
+  const { takePhoto } = usePhotoGallery();
   return (
     <IonPage>
       <IonHeader>
@@ -30,5 +33,6 @@ const Tab2: React.FC = () => {
     </IonPage>
   );
 };
+  
 
 export default Tab2;
