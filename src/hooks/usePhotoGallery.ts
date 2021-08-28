@@ -12,6 +12,7 @@ import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Storage } from "@capacitor/storage";
 import { Capacitor } from "@capacitor/core";
 import { image } from "ionicons/icons";
+import { platform } from "os";
 
 
 export interface UserPhoto {
@@ -24,13 +25,36 @@ export function usePhotoGallery() {
   const [photos,setPhotos] = useState<UserPhoto[]>([]);
   
   const savePicture = async (photo: CameraPhoto, fileName: string): Promise<UserPhoto> => {
-    const base64Data = await base64FromPath(photo.webPath!);
-    const savedFile = await Filesystem.writeFile({
-      path: fileName,
-      data: base64Data,
-      directory: Directory.Data
-    });
+   let base64Data:string;
 
+   if(isPlatform('hybrid')){
+      const file = await Filesystem.readFile({
+        path:photo.path!
+      });
+      base64Data = file.data;
+   }
+   else {
+    base64Data = await base64FromPath(photo.webPath!);
+   }
+   
+   const savedFile = await Filesystem.writeFile({
+    path: fileName,
+    data: base64Data,
+    directory: Directory.Data
+  })
+
+  if(isPlatform('hybrid')){
+    return {
+      filepath: savedFile.uri,
+      webviewPath: Capacitor.convertFileSrc(savedFile.uri)
+    }
+  }
+  else {
+    return {
+      filepath: fileName,
+      webviewPath: photo.webPath
+    }
+  }
     // Use webPath to display the new image instead of base64 since it's
     // already loaded into memory
     return {
@@ -44,15 +68,17 @@ export function usePhotoGallery() {
       const { value } = await Storage.get({ key: PHOTO_STORAGE});
       const photosInStorage = (value ? JSON.parse(value): []) as UserPhoto[];
 
-      for(let photo of photosInStorage){
-        const file = await Filesystem.readFile({
-          path: photo.filepath,
-          directory: Directory.Data,
-        });
+      if(!isPlatform('hybrid')){
+        for(let photo of photosInStorage){
+          const file = await Filesystem.readFile({
+            path: photo.filepath,
+            directory: Directory.Data,
+          });
 
-        photo.webviewPath = `data:image/jpeg;base64,${file.data}`;
+          photo.webviewPath = `data:image/jpeg;base64,${file.data}`;
+        }
       }
-      setPhotos(photosInStorage);
+        setPhotos(photosInStorage);
     }
     loadSaved();
   }, [])
