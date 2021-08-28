@@ -3,6 +3,7 @@ import { isPlatform } from "@ionic/react";
 
 import {
   Camera,
+  CameraPhoto,
   CameraResultType,
   CameraSource,
   Photo,
@@ -19,7 +20,23 @@ export interface UserPhoto {
 
 export function usePhotoGallery() {
   const [photos,setPhotos] = useState<UserPhoto[]>([]);
+  
+  const savePicture = async (photo: CameraPhoto, fileName: string): Promise<UserPhoto> => {
+    const base64Data = await base64FromPath(photo.webPath!);
+    const savedFile = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Data
+    });
 
+    // Use webPath to display the new image instead of base64 since it's
+    // already loaded into memory
+    return {
+      filepath: fileName,
+      webviewPath: photo.webPath
+    };
+  };
+  
   const takePhoto = async () => {
     const cameraPhoto = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
@@ -29,15 +46,8 @@ export function usePhotoGallery() {
   
 
     const fileName = new Date().getTime() + '.jpeg';
-
-    const newPhotos = [
-      {
-        filepath: fileName,
-        webviewPath: cameraPhoto.webPath,
-      },
-      ...photos,
-    ];
-    
+    const savedFileImage = await savePicture(cameraPhoto,fileName)
+    const newPhotos = [savedFileImage, ...photos];
     setPhotos(newPhotos)
   };  
 
@@ -46,3 +56,24 @@ export function usePhotoGallery() {
     takePhoto,
   };
 }
+
+
+
+export async function base64FromPath(path: string): Promise<string> {
+  const response = await fetch(path);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject('method did not return a string')
+      }
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+    
