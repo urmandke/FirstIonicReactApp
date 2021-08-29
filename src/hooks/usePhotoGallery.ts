@@ -23,6 +23,18 @@ export interface UserPhoto {
 const PHOTO_STORAGE = "photos";
 export function usePhotoGallery() {
   const [photos,setPhotos] = useState<UserPhoto[]>([]);
+
+  const deletePhoto = async (photo:UserPhoto) =>{
+    const newPhotos = photos.filter(p=>p.filepath !== photo.filepath)
+    Storage.set({key:PHOTO_STORAGE, value: JSON.stringify(newPhotos)})
+
+    const fileName = photo.filepath.substr(photo.filepath.lastIndexOf('/')+1);
+    await Filesystem.deleteFile({
+      path:fileName,
+      directory:Directory.Data
+    });
+    setPhotos(newPhotos);
+  }
   
   const savePicture = async (photo: CameraPhoto, fileName: string): Promise<UserPhoto> => {
    let base64Data:string;
