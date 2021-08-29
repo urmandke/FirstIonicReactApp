@@ -113,6 +113,7 @@ export function usePhotoGallery() {
 
 
   return {
+    deletePhoto,
     photos,
     takePhoto,
   };

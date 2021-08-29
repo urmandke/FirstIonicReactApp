@@ -9,7 +9,7 @@ import { usePhotoGallery, UserPhoto } from "../hooks/usePhotoGallery"
 
 const Tab2: React.FC = () => {
   const [photoToDelete, setPhotoToDelete] = useState<UserPhoto>();
-  const { photos, takePhoto } = usePhotoGallery();
+  const { deletePhoto, photos, takePhoto } = usePhotoGallery();
   return (
     <IonPage>
       <IonHeader>
